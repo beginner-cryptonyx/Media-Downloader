@@ -98,7 +98,7 @@ class LinkHandler():
 
         Args:
             video_id (str): Video ID from the return value of the first element of the get_streams() tuple
-            output_path (_type_, optional): A pre-existing path to which the downloaded video is saved to. Defaults to None.
+            output_path (string, optional): A pre-existing path to which the downloaded video is saved to. Defaults to None.
 
         Raises:
             ModuleError: If the audio_info is empty
@@ -131,13 +131,13 @@ class LinkHandler():
             if "Destination:" in line:
                 phase += 1
             if "[download]" in line:
-                print(line)
+                # print(line)
                 match_object = re.search(r"\d+\.\d+(?=%)", line)
                 if match_object is not None:
                     if phase == 1:
-                        print(float(match_object.group().replace('%', ""))/2, '%') 
+                        yield float(match_object.group())/2, '%'
                     elif phase == 2:
-                        print(float(match_object.group().replace('%', ""))/2+50, '%') 
+                        yield float(match_object.group())/2+50, '%'
 
         process.wait()
         if process.returncode != 0:
@@ -150,4 +150,4 @@ if __name__ == "__main__":
     print(handler.get_display_info())
     print(handler.get_streams()[0])
     id = input("choose an id")
-    handler.download_content(id, "./outpu2222t")
+    handler.download_content(id, "./output")
