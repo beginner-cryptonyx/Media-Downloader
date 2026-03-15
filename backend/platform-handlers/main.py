@@ -98,9 +98,12 @@ class LinkHandler():
         sorted_audio = dict(sorted(self.audio_info.items(), key=lambda item: item[1]["avg_bitrate"], reverse=True))
         command = ["yt-dlp", "-f", f"{video_id}+{next(iter(sorted_audio))}"]
 
-        # ToDo: Add Error handling for checking if output path is legit
         if output_path is not None:
-
+            if not os.path.isdir(output_path):
+                raise ValueError(f"Output path does not exist: {output_path}")
+            if not os.access(output_path, os.W_OK):
+                raise ValueError(f"No write permission for path: {output_path}")
+            
             command.append('-o')
             command.append(f"{output_path}/%(title)s [%(id)s].%(ext)s")
 
