@@ -135,9 +135,9 @@ class LinkHandler():
                 match_object = re.search(r"\d+\.\d+(?=%)", line)
                 if match_object is not None:
                     if phase == 1:
-                        yield float(match_object.group())/2, '%'
+                        yield f"{float(match_object.group())/2}"
                     elif phase == 2:
-                        yield float(match_object.group())/2+50, '%'
+                        yield f"{float(match_object.group())/2+50}%"
 
         process.wait()
         if process.returncode != 0:
