@@ -1,29 +1,41 @@
 import subprocess
 import json
+from exceptions import InvalidLinkError, ModuleError
 
 class LinkHandler():
     def __init__(self, link:str):
         self.link = link
+        self.metadata = None
         self.get_metadata()
 
 
     def get_metadata(self):
         metadata = subprocess.run(["yt-dlp", "-j", self.link], capture_output=True, text=True)
-        metadata = json.loads(metadata.stdout)
-        self.metadata = metadata
+        
+        if metadata.returncode != 0:
+            raise InvalidLinkError(f"Could not fetch video info: {metadata.stderr.strip()}")
 
+        try: 
+            self.metadata = json.loads(metadata.stdout)
+        except json.JSONDecodeError:
+            raise InvalidLinkError("Received unexpected response for this link")
+        
 
     def get_display_info(self):
-        info = {
-            'id': self.metadata['id'],
-            'title': self.metadata['title'],
-            'duration': self.metadata['duration'],
-            'views': self.metadata['view_count'],
+        if self.metadata is not None:
+            info = {
+                'id': self.metadata['id'],
+                'title': self.metadata['title'],
+                'duration': self.metadata['duration'],
+                'views': self.metadata['view_count'],
 
-        }
-        return info
+            }
+            return info
+        else: raise ModuleError("Something went wrong, unable to fetch metadata")
     
     def get_streams(self):
+        if self.metadata is None:
+            raise ModuleError("Something went wrong, unable to fetch metadata")
         self.audio_info = {}
         self.video_info = {}
         for stream in self.metadata["formats"]:
