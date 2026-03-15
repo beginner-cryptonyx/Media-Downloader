@@ -1,1 +1,1 @@
-from .main import LinkHandler
+from .link_handler import LinkHandler
