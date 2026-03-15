@@ -1,11 +1,14 @@
 import subprocess
 import json
-from exceptions import InvalidLinkError, ModuleError
+import re
+from exceptions import InvalidLinkError, ModuleError, DownloadError
 
 class LinkHandler():
     def __init__(self, link:str):
         self.link = link
         self.metadata = None
+        self.audio_info = None
+        self.video_info = None
         self.get_metadata()
 
 
@@ -57,8 +60,29 @@ class LinkHandler():
         return self.video_info, self.audio_info
     
     def download_content(self, video_id):
+        if not self.audio_info:
+            raise ModuleError("could not get audio streams (was the get_streams() method used?)")
         sorted_audio = dict(sorted(self.audio_info.items(), key=lambda item: item[1]["avg_bitrate"], reverse=True))
-        subprocess.run(["yt-dlp", "-f", f"{video_id}+{next(iter(sorted_audio))}", self.link])
+        command = ["yt-dlp", "-f", f"{video_id}+{next(iter(sorted_audio))}", self.link]
+
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        phase = 0 # if progress is 0, then download not started yet, 1 means video is being downloaded, 2 means audio is being downloaded  
+        for line in process.stdout:
+            line = line.strip()
+            if "Destination:" in line:
+                phase += 1
+            if "[download]" in line:
+                print(line)
+                match_object = re.search(r"\d+\.\d+(?=%)", line)
+                if match_object is not None:
+                    if phase == 1:
+                        print(float(match_object.group().replace('%', ""))/2, '%') 
+                    elif phase == 2:
+                        print(float(match_object.group().replace('%', ""))/2+50, '%') 
+
+        process.wait()
+        if process.returncode != 0:
+            raise DownloadError("Unable to download video")
         
 
 
