@@ -1,6 +1,7 @@
 import subprocess
 import json
 import re
+import os
 from exceptions import InvalidLinkError, ModuleError, DownloadError
 
 class LinkHandler():
@@ -93,6 +94,18 @@ class LinkHandler():
         return self.video_info, self.audio_info
     
     def download_content(self, video_id, output_path=None):
+        """Method to download a video form the URL based on the video stream ID provided
+
+        Args:
+            video_id (str): Video ID from the return value of the first element of the get_streams() tuple
+            output_path (_type_, optional): A pre-existing path to which the downloaded video is saved to. Defaults to None.
+
+        Raises:
+            ModuleError: If the audio_info is empty
+            ValueError: If path doesn't exist
+            ValueError: Not enough permission to access given path
+            DownloadError: If download fails
+        """
         if not self.audio_info:
             raise ModuleError("could not get audio streams (was the get_streams() method used?)")
         sorted_audio = dict(sorted(self.audio_info.items(), key=lambda item: item[1]["avg_bitrate"], reverse=True))
