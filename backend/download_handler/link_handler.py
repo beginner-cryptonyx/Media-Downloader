@@ -2,7 +2,7 @@ import subprocess
 import json
 import re
 import os
-from exceptions import InvalidLinkError, ModuleError, DownloadError
+from .exceptions import InvalidLinkError, ModuleError, DownloadError
 
 class LinkHandler():
     """
@@ -145,9 +145,3 @@ class LinkHandler():
         
 
 
-if __name__ == "__main__":
-    handler = LinkHandler("https://youtu.be/x-wf8Yb5ZCM?si=u1ZWtQc85v1WCFH7") # Khabib by Central Cee
-    print(handler.get_display_info())
-    print(handler.get_streams()[0])
-    id = input("choose an id")
-    handler.download_content(id, "./output")
