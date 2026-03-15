@@ -1,7 +1,7 @@
 import uuid
 from backend.download_handler import LinkHandler
 
-sessions = {}
+sessions:dict[str,LinkHandler] = {}
 
 def create_session(url:str):
     session_id = str(uuid.uuid4())

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <div id="output"></div>
+    <script>
+        const source = new EventSource("http://localhost:8000/download?session_id=0f310685-43c2-4632-a27e-0840696c08b2&video_stream_id=136");
+        
+        source.onmessage = (event) => {
+            document.getElementById("output").innerHTML += event.data + "<br>";
+            if (event.data === "done") {
+                source.close();
+            }
+        };
+    </script>
+</body>
+</html>
