@@ -4,7 +4,18 @@ import re
 from exceptions import InvalidLinkError, ModuleError, DownloadError
 
 class LinkHandler():
+    """
+    Handles fetching metadata and downloading video from an URL
+
+    Attributes:
+        link (str): URL of the video
+    """
     def __init__(self, link:str):
+        """initiallise the class
+
+        Args:
+            link (str): Link from which to fetch the metadata
+        """
         self.link = link
         self.metadata = None
         self.audio_info = None
@@ -13,6 +24,12 @@ class LinkHandler():
 
 
     def get_metadata(self):
+        """Gets meta data from video, including title, duration, and views
+
+        Raises:
+            InvalidLinkError: If metadata could not be fetched
+            InvalidLinkError: If metadata could not be decoded
+        """
         metadata = subprocess.run(["yt-dlp", "-j", self.link], capture_output=True, text=True)
         
         if metadata.returncode != 0:
@@ -25,6 +42,14 @@ class LinkHandler():
         
 
     def get_display_info(self):
+        """From metadata it returns the id, views, title, duration, and view count in a dict
+
+        Raises:
+            ModuleError: If self.metadata is empty
+
+        Returns:
+            dict[str,any]: The return object of all information to be displayed to user
+        """
         if self.metadata is not None:
             info = {
                 'id': self.metadata['id'],
@@ -37,6 +62,14 @@ class LinkHandler():
         else: raise ModuleError("Something went wrong, unable to fetch metadata")
     
     def get_streams(self):
+        """Gets the audio and video streams from video URL
+
+        Raises:
+            ModuleError: if metadata is empty
+
+        Returns:
+            tuple[dict, dict]: (video_info, audio_info) where both dicts are keyed by ids 
+        """
         if self.metadata is None:
             raise ModuleError("Something went wrong, unable to fetch metadata")
         self.audio_info = {}
@@ -66,7 +99,9 @@ class LinkHandler():
         command = ["yt-dlp", "-f", f"{video_id}+{next(iter(sorted_audio))}", self.link]
 
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        phase = 0 # if progress is 0, then download not started yet, 1 means video is being downloaded, 2 means audio is being downloaded  
+
+        # 0: not started, 1: video, 2: audio
+        phase = 0 
         for line in process.stdout:
             line = line.strip()
             if "Destination:" in line:
